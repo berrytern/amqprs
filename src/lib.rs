@@ -230,7 +230,7 @@ impl TlsAdaptor {
         key_path: PathBuf,
         domain: String,
     ) -> PyResult<Self> {
-        rustls::crypto::aws_lc_rs::default_provider()
+        rustls::crypto::ring::default_provider()
         .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
         let root_cert_store: RootCertStore = TlsAdaptor::build_root_store(ca_path.as_deref())?;
         let client_certs: Vec<CertificateDer> = TlsAdaptor::build_client_certificates(&cert_path)?;
@@ -249,7 +249,7 @@ impl TlsAdaptor {
     }
     #[staticmethod]
     pub fn without_client_auth(root_ca_cert: Option<PathBuf>, domain: String) -> PyResult<Self> {
-        rustls::crypto::aws_lc_rs::default_provider()
+        rustls::crypto::ring::default_provider()
         .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
         let inner = Arc::new(
             RuTlsAdaptor::without_client_auth(root_ca_cert.as_deref(), domain)
