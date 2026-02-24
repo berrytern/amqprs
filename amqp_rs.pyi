@@ -1,6 +1,11 @@
 from typing import Callable, Optional, Any, List, Awaitable, Union
 from enum import Enum
 
+
+class DeliveryMode(Enum):
+    Transient = 1
+    Persistent = 2
+
 class ContentEncoding(Enum):
     Zstd = 'zstd',
     Lz4 = 'lz4',
@@ -67,7 +72,9 @@ class AsyncEventbus:
         body: Union[bytes, str],
         content_type: Optional[str],
         content_encoding: ContentEncoding,
-        command_timeout: Optional[int]
+        command_timeout: Optional[int],
+        delivery_mode: DeliveryMode,
+        expiration: Optional[int],
     ) -> None :
         """
         Sends a publish message to the bus following parameters passed
@@ -77,14 +84,14 @@ class AsyncEventbus:
             routing_key:  routing key name
             body: body that will be sent
             content_type: content type of message
+            content_encoding: content encoding of message
             timeout: timeout in seconds for waiting for response
             connection_timeout: timeout for waiting for connection restabilishment
             delivery_mode: delivery mode
             expiration: maximum lifetime of message to stay on the queue
 
         Returns:
-            None: if publish confirmation is setted to False
-            True: if successful when publish confirmation is setted to True
+            None
 
         Raises:
             AutoReconnectException: when cannout reconnect on the gived timeout
@@ -110,6 +117,7 @@ class AsyncEventbus:
         content_encoding: ContentEncoding,
         response_timeout: int,
         command_timeout: Optional[int],
+        delivery_mode: DeliveryMode,
         expiration: Optional[int],
     ) -> bytes:
         """
@@ -120,8 +128,10 @@ class AsyncEventbus:
             routing_key:  routing key name
             body: body that will be sent
             content_type: content type of message
+            content_encoding: content encoding of message
             response_timeout: timeout in seconds for waiting for response
             command_timeout: timeout for waiting for command execution
+            delivery_mode: delivery mode
             expiration: maximum lifetime of message to stay on the queue
 
         Returns:

@@ -1,14 +1,12 @@
 use std::{fs::File, io::BufReader, path::Path, sync::Arc};
 
 use amqp_client_rust::{
-    api::{
+    amqprs::{tls::TlsAdaptor as RuTlsAdaptor}, api::{
         eventbus::AsyncEventbusRabbitMQ as RuAsyncEventbusRabbitMQ,
-        utils::ContentEncoding as RuContentEncoding,
-    },
-    domain::config::{
+        utils::{ContentEncoding as RuContentEncoding, DeliveryMode as RuDeliveryMode},
+    }, domain::config::{
         Config as RuConfig, ConfigOptions as RuConfigOptions, QoSConfig as RuQoSConfig,
-    },
-    amqprs::tls::TlsAdaptor as RuTlsAdaptor,
+    }
 };
 use pyo3::{
     exceptions::PyValueError, prelude::*, types::{PyBytes, PyString}
@@ -29,6 +27,21 @@ use std::path::PathBuf;
 #[derive(Clone)]
 struct AsyncEventbus {
     eventbus: Arc<RuAsyncEventbusRabbitMQ>,
+}
+
+#[pyclass(from_py_object, get_all, set_all)]
+#[derive(Debug, Clone)]
+pub enum DeliveryMode {
+    Transient = 1,
+    Persistent = 2,
+}
+impl From<DeliveryMode> for RuDeliveryMode {
+    fn from(mode: DeliveryMode) -> Self {
+        match mode {
+            DeliveryMode::Transient => RuDeliveryMode::Transient,
+            DeliveryMode::Persistent => RuDeliveryMode::Persistent,
+        }
+    }
 }
 
 #[pyclass(from_py_object, get_all, set_all)]
@@ -356,7 +369,7 @@ impl AsyncEventbus {
         }
     }
 
-    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, connection_timeout=None, expiration=None))]
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, command_timeout=None, delivery_mode=DeliveryMode::Transient, expiration=None))]
     fn publish<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &'py str,
@@ -365,6 +378,8 @@ impl AsyncEventbus {
         content_type: Option<&'py str>,
         content_encoding: ContentEncoding,
         command_timeout: Option<u64>,
+        delivery_mode: DeliveryMode,
+        expiration: Option<u32>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let eventbus = Arc::clone(&slf.eventbus);
         let py = slf.py();
@@ -388,6 +403,8 @@ impl AsyncEventbus {
                     content_type.as_deref(),
                     content_encoding.into(),
                     command_timeout,
+                    Some(delivery_mode.into()),
+                    expiration,
                 )
                 .await
             {
@@ -397,7 +414,7 @@ impl AsyncEventbus {
         })
     }
 
-    #[pyo3(signature = (exchange_name, routing_key, body, content_type="application/json", content_encoding=ContentEncoding::Null, response_timeout=20_000, connection_timeout=None, expiration=None))]
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type="application/json", content_encoding=ContentEncoding::Null, response_timeout=20_000, connection_timeout=None, delivery_mode=DeliveryMode::Transient, expiration=None))]
     fn rpc_client<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &str,
@@ -407,6 +424,7 @@ impl AsyncEventbus {
         content_encoding: ContentEncoding,
         response_timeout: u32,
         connection_timeout: Option<u64>,
+        delivery_mode: DeliveryMode,
         expiration: Option<u32>,
     ) -> PyResult<Bound<'py, PyAny>> {
         let eventbus = Arc::clone(&slf.eventbus);
@@ -431,6 +449,7 @@ impl AsyncEventbus {
                     content_encoding.into(),
                     response_timeout,
                     conn_timeout,
+                    Some(delivery_mode.into()),
                     expiration,
                 )
                 .await
