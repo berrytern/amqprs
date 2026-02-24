@@ -1,11 +1,23 @@
-from typing import Callable, Optional, Any, List, Coroutine, Awaitable
+from typing import Callable, Optional, Any, List, Awaitable
+from enum import Enum
 
+class ContentEncoding(Enum):
+    Zstd = 'zstd',
+    Lz4 = 'lz4',
+    Zlib = 'zlib',
+    Null = 'null'
 
 class ConfigOptions:
     queue_name: str
     rpc_exchange_name: str
     rpc_queue_name: str
     def __init__(self, queue_name: str, rpc_exchange_name: str, rpc_queue_name: str) -> None: ...
+
+class TlsAdaptor:
+    @staticmethod
+    def with_client_auth(ca_path: Optional[str], cert_path: str, key_path: str, domain: str) -> "TlsAdaptor": ...
+    @staticmethod
+    def without_client_auth(root_ca_cert: Optional[str], domain: str) -> "TlsAdaptor": ...
 
 class Config:
     host: str
@@ -54,6 +66,7 @@ class AsyncEventbus:
         routing_key: str,
         body: bytes,
         content_type: Optional[str],
+        content_encoding: ContentEncoding,
         command_timeout: Optional[int]
     ) -> None :
         ...
@@ -63,6 +76,7 @@ class AsyncEventbus:
         routing_key: str,
         body: bytes,
         content_type: str,
+        content_encoding: ContentEncoding,
         timeout_millis: int,
         command_timeout: Optional[int],
         expiration: Optional[int],
@@ -90,3 +104,6 @@ class AsyncEventbus:
         ...
         
     async def dispose(self) -> None: ...
+
+class Payload:
+    def __init__(self, data: bytes) -> None: ...
