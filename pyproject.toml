@@ -3,7 +3,7 @@ requires = ["maturin>=1.11,<2.0"]
 build-backend = "maturin"
 
 [project]
-name = "amqp-rs"
+name = "amqpr"
 requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Rust",
@@ -15,5 +15,7 @@ dynamic = ["version"]
 [dependency-groups]
 dev = [
     "amqp-client-python>=0.2.0",
+    "pytest>=8.3.5",
+    "pytest-asyncio>=0.24.0",
     "uvloop>=0.21.0",
 ]

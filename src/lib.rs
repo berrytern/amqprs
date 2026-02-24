@@ -356,6 +356,7 @@ impl AsyncEventbus {
         }
     }
 
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, connection_timeout=None, expiration=None))]
     fn publish<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &'py str,
@@ -396,6 +397,7 @@ impl AsyncEventbus {
         })
     }
 
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type="application/json", content_encoding=ContentEncoding::Null, response_timeout=20_000, connection_timeout=None, expiration=None))]
     fn rpc_client<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &str,
@@ -403,7 +405,7 @@ impl AsyncEventbus {
         body: Payload<'py>,
         content_type: &str,
         content_encoding: ContentEncoding,
-        timeout_millis: u32,
+        response_timeout: u32,
         connection_timeout: Option<u64>,
         expiration: Option<u32>,
     ) -> PyResult<Bound<'py, PyAny>> {
@@ -427,7 +429,7 @@ impl AsyncEventbus {
                     payload_bytes,
                     &content_type,
                     content_encoding.into(),
-                    timeout_millis,
+                    response_timeout,
                     conn_timeout,
                     expiration,
                 )
@@ -504,6 +506,7 @@ impl AsyncEventbus {
         })
     }
 
+    #[pyo3(signature = (routing_key, handler, process_timeout=None, command_timeout=None))]
     fn rpc_server<'py>(
         slf: PyRef<'py, Self>,
         routing_key: &str,

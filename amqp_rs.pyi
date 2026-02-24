@@ -1,4 +1,4 @@
-from typing import Callable, Optional, Any, List, Awaitable
+from typing import Callable, Optional, Any, List, Awaitable, Union
 from enum import Enum
 
 class ContentEncoding(Enum):
@@ -64,23 +64,81 @@ class AsyncEventbus:
         self, 
         exchange_name: str,
         routing_key: str,
-        body: bytes,
+        body: Union[bytes, str],
         content_type: Optional[str],
         content_encoding: ContentEncoding,
         command_timeout: Optional[int]
     ) -> None :
+        """
+        Sends a publish message to the bus following parameters passed
+
+        Args:
+            exchange: exchange name
+            routing_key:  routing key name
+            body: body that will be sent
+            content_type: content type of message
+            timeout: timeout in seconds for waiting for response
+            connection_timeout: timeout for waiting for connection restabilishment
+            delivery_mode: delivery mode
+            expiration: maximum lifetime of message to stay on the queue
+
+        Returns:
+            None: if publish confirmation is setted to False
+            True: if successful when publish confirmation is setted to True
+
+        Raises:
+            AutoReconnectException: when cannout reconnect on the gived timeout
+            PublishTimeoutException: if publish confirmation is setted to True and \
+            does not receive confirmation on the gived timeout
+            NackException: if publish confirmation is setted to True and receives a nack
+
+
+        Examples:
+            >>> from json import dumps
+            >>> exchange_name = "example.rpc"
+            >>> routing_key = "user.find3"
+            >>> await eventbus.publish(exchange_name, routing_key, dumps(["content_message"]), "application/json", ContentEncoding.Null, None)
+        """
         ...
+
     async def rpc_client(
         self, 
         exchange_name: str,
         routing_key: str,
-        body: bytes,
+        body: Union[bytes, str],
         content_type: str,
         content_encoding: ContentEncoding,
-        timeout_millis: int,
+        response_timeout: int,
         command_timeout: Optional[int],
         expiration: Optional[int],
-    ) -> Any:
+    ) -> bytes:
+        """
+        Sends a publish message to queue of the bus and waits for a response
+
+        Args:
+            exchange: exchange name
+            routing_key:  routing key name
+            body: body that will be sent
+            content_type: content type of message
+            response_timeout: timeout in seconds for waiting for response
+            command_timeout: timeout for waiting for command execution
+            expiration: maximum lifetime of message to stay on the queue
+
+        Returns:
+            bytes: response message
+
+        Raises:
+            AutoReconnectException: when cannout reconnect on the gived timeout
+            PublishTimeoutException: if publish confirmation is setted to True and \
+            does not receive confirmation on the gived timeout
+            NackException: if publish confirmation is setted to True and receives a nack
+            ResponseTimeoutException: if response timeout is reached
+            RpcProviderException: if the rpc provider responded with an error
+
+        Examples:
+            >>> from json import dumps
+            >>> await eventbus.rpc_client("example.rpc", "user.find", dumps([{"name": "example"}]), "application/json")
+        """
         ...
 
     async def subscribe(
