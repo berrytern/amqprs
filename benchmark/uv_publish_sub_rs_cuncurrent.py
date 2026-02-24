@@ -36,6 +36,6 @@ async def run():
         end = perf_counter()
         print(f"all time: {(end - before)} seconds")
         print(f"time to dispose: {(end - after)} seconds")
-    except KeyboardInterrupt:
+    finally:
         await eventbus.dispose()
 asyncio.run(run())
