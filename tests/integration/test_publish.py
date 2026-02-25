@@ -1,5 +1,5 @@
 import pytest
-from amqp_rs import AsyncEventbus, Config, ConfigOptions, QoSConfig, ContentEncoding, TlsAdaptor
+from amqpr import AsyncEventbus, Config, ConfigOptions, QoSConfig, ContentEncoding
 from asyncio import Future, sleep, get_running_loop
 from json import dumps
 
@@ -23,4 +23,4 @@ async def test_subscribe():
     await future
     assert future.done()
     assert future.result() == message
-    await sleep(1)
+    await eventbus.dispose()

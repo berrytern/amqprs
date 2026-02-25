@@ -1,4 +1,4 @@
-from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
+from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
 from threading import Thread
 import asyncio
 import uvloop
@@ -18,7 +18,7 @@ total_messages = 300_000
 async def run(messages: int):
     sended = []
     payload = bytes(dumps('Hello, RPC!'), "utf-8")
-    sended = [eventbus.publish('test_exchange', "abc.example", payload, "application/json", 100) for _ in range(messages)]
+    sended = [eventbus.publish('test_exchange', "abc.example", payload) for _ in range(messages)]
     await asyncio.gather(*sended)
     #await eventbus.dispose()
 def run_process(messages):
@@ -57,6 +57,8 @@ if __name__ == '__main__':
     end = perf_counter()
     print(f"all time: {(end - before)} seconds")
     print(f"time to dispose: {(end - after)} seconds")
+    #Time taken for 300k messages: 10.52721416499844 seconds
+    #Mean messages per second for 300k messages: 28497.56785583971
     del eventbus
     del config
     del options

@@ -105,6 +105,7 @@ pub struct Config {
 #[pymethods]
 impl Config {
     #[new]
+    #[pyo3(signature = (host, port, username, password, virtual_host, options, tls_adaptor=None))]
     fn new(
         host: String,
         port: u16,
@@ -414,7 +415,7 @@ impl AsyncEventbus {
         })
     }
 
-    #[pyo3(signature = (exchange_name, routing_key, body, content_type="application/json", content_encoding=ContentEncoding::Null, response_timeout=20_000, connection_timeout=None, delivery_mode=DeliveryMode::Transient, expiration=None))]
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type="application/json", content_encoding=ContentEncoding::Null, response_timeout=20_000, connection_timeout=Some(32), delivery_mode=DeliveryMode::Transient, expiration=None))]
     fn rpc_client<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &str,
@@ -461,6 +462,7 @@ impl AsyncEventbus {
         })
     }
 
+    #[pyo3(signature = (exchange_name, routing_key, handler, process_timeout=None, command_timeout=Some(16)))]
     fn subscribe<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &str,
@@ -526,7 +528,7 @@ impl AsyncEventbus {
     }
 
     #[pyo3(signature = (routing_key, handler, process_timeout=None, command_timeout=None))]
-    fn rpc_server<'py>(
+    fn provide_resource<'py>(
         slf: PyRef<'py, Self>,
         routing_key: &str,
         handler: Py<PyAny>,
@@ -614,7 +616,7 @@ impl AsyncEventbus {
 }
 
 #[pymodule]
-fn amqp_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn amqpr(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AsyncEventbus>()?;
     m.add_class::<Config>()?;
     m.add_class::<ConfigOptions>()?;

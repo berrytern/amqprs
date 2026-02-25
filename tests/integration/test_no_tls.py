@@ -1,5 +1,5 @@
 import pytest
-from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
+from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig
 import asyncio
 
 @pytest.mark.asyncio

@@ -3,7 +3,7 @@ from amqp_client_python import Config, Options, AsyncEventbusRabbitMQ
 import asyncio
 import uvloop
 uvloop.install()
-from time import thread_time_ns
+from time import time_ns
 
 
 async def run():
@@ -16,24 +16,18 @@ async def run():
     exchange_name = options.rpc_exchange_name
     routing_key = "abc.example"
     def handler(body):
-        pass #print(f"Received message: {body}")
-    #    return body
-    #await eventbus.rpc_server(handler, routing_key, "application/json", None)
+        pass
     await eventbus.subscribe(exchange_name, routing_key, handler)
-    await asyncio.sleep(10)
-    before = thread_time_ns()
-    #await eventbus.dispose()
+    await asyncio.sleep(3)
+    before = time_ns()
     
-    for _ in range(0, 30):
-        for _ in range(0, 10000):
-        #print("response:", await eventbus.rpc_client(exchange_name, routing_key, b'Hello, RPC!', "application/json", 100_000, None, None))
-            await eventbus.publish(exchange_name, routing_key, 'Hello, RPC!', "application/json")
-        #await asyncio.sleep(1)
+    for _ in range(0, 300_000):
+        await eventbus.publish(exchange_name, routing_key, 'Hello, RPC!', "application/json")
         #'''
-    after = thread_time_ns()
+    after = time_ns()
     print(f"Time taken for 300k messages: {(after - before) / 1_000_000_000} seconds")
     print(f"Mean messages per second for 300k messages: {300_000 / ((after - before) / 1_000_000_000)}")
     await eventbus.dispose(False)
-    #Time taken for 300k messages: 104.610308301 seconds
-    #Mean messages per second for 300k messages: 2867.7862141156907
+    #Time taken for 300k messages: 74.701816233 seconds
+    #Mean messages per second for 300k messages: 4015.9666140416152
 asyncio.run(run())

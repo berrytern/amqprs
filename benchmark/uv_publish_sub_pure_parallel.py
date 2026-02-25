@@ -1,6 +1,5 @@
 from amqp_client_python import Config, Options, rabbitmq
 from threading import Thread
-import asyncio
 import uvloop
 uvloop.install()
 from time import perf_counter, sleep
@@ -53,3 +52,4 @@ if __name__ == '__main__':
     end = perf_counter()
     print(f"all time: {(end - before)} seconds")
     print(f"time to dispose: {(end - after)} seconds")
+    # Failling

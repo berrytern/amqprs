@@ -1,4 +1,5 @@
 from typing import Callable, Optional, Any, List, Awaitable, Union
+from concurrent.futures import Future
 from enum import Enum
 
 
@@ -31,6 +32,7 @@ class Config:
     password: str
     virtual_host: str
     options: ConfigOptions
+    tls_adaptor: Optional[TlsAdaptor]
 
     def __init__(
         self,
@@ -39,7 +41,8 @@ class Config:
         username: str,
         password: str,
         virtual_host: str,
-        options: ConfigOptions
+        options: ConfigOptions,
+        tls_adaptor: Optional[TlsAdaptor]
     ) -> None: ...
 
 
@@ -65,17 +68,17 @@ class AsyncEventbus:
     def __init__(self, config: Config, qos_config: QoSConfig) -> None:
         ...
 
-    async def publish(
+    def publish(
         self, 
         exchange_name: str,
         routing_key: str,
         body: Union[bytes, str],
-        content_type: Optional[str],
-        content_encoding: ContentEncoding,
-        command_timeout: Optional[int],
-        delivery_mode: DeliveryMode,
-        expiration: Optional[int],
-    ) -> None :
+        content_type: Optional[str] = "application/json",
+        content_encoding: ContentEncoding = ContentEncoding.Null,
+        command_timeout: int = 16,
+        delivery_mode: DeliveryMode = DeliveryMode.Transient,
+        expiration: Optional[int] = None,
+    ) -> Future[None]:
         """
         Sends a publish message to the bus following parameters passed
 
@@ -108,18 +111,18 @@ class AsyncEventbus:
         """
         ...
 
-    async def rpc_client(
+    def rpc_client(
         self, 
         exchange_name: str,
         routing_key: str,
         body: Union[bytes, str],
-        content_type: str,
-        content_encoding: ContentEncoding,
-        response_timeout: int,
-        command_timeout: Optional[int],
-        delivery_mode: DeliveryMode,
-        expiration: Optional[int],
-    ) -> bytes:
+        content_type: str = "application/json",
+        content_encoding: ContentEncoding = ContentEncoding.Null,
+        response_timeout: int = 20_000,
+        command_timeout: int = 32,
+        delivery_mode: DeliveryMode = DeliveryMode.Transient,
+        expiration: Optional[int] = None,
+    ) -> Future[bytes]:
         """
         Sends a publish message to queue of the bus and waits for a response
 
@@ -151,27 +154,32 @@ class AsyncEventbus:
         """
         ...
 
-    async def subscribe(
+    def subscribe(
         self,
         exchange_name: str,
         routing_key: str,
-        handler: Callable[[List[bytes]], None],
-        process_timeout: Optional[int],
-        command_timeout: Optional[int],
-    ) -> Any:
+        handler: Callable[[bytes], None],
+        process_timeout: Optional[int] = None,
+        command_timeout: int = 16,
+    ) -> Future[None]:
         ...
 
 
-    async def rpc_server(
+    def provide_resource(
         self,
         routing_key: str,
-        handler: Callable[[List[bytes]], Awaitable[List[bytes]]],
-        process_timeout: Optional[int],
-        command_timeout: Optional[int],
-    ) -> Any:
+        handler: Callable[[bytes], Awaitable[bytes]],
+        process_timeout: Optional[int] = None,
+        command_timeout: int = 16,
+    ) -> Future[None]:
+        """
+        Registers an RPC provider on the bus with the given routing key and handler function. The handler function will be called with the message body when a request is received for the given routing key, and should return the response body.
+        """
         ...
         
-    async def dispose(self) -> None: ...
+    def dispose(self) -> Future[None]:
+        """Gracefully disposes the eventbus, closing connections and channels. Should be called when the eventbus is no longer needed to free up resources."""
+        ...
 
 class Payload:
     def __init__(self, data: bytes) -> None: ...

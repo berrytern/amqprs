@@ -1,4 +1,4 @@
-from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, ContentEncoding, TlsAdaptor
+from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig, ContentEncoding, TlsAdaptor
 
 import asyncio
 import uvloop
@@ -41,6 +41,8 @@ async def run():
         end = perf_counter()
         print(f"all time: {(end - before)} seconds")
         print(f"time to dispose: {(end - after)} seconds")
+        #Time taken for 300k messages: 12.519942352002545 seconds
+        #Mean messages per second for 300k messages: 23961.771673175113
     finally:
         await eventbus.dispose()
 asyncio.run(run())
