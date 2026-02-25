@@ -21,7 +21,7 @@ wheels = [
 ]
 
 [[package]]
-name = "amqp-rs"
+name = "amqpr"
 source = { editable = "." }
 
 [package.dev-dependencies]

@@ -235,6 +235,16 @@ impl TlsAdaptor {
     }
 }
 
+fn install_crypto_provider() -> Result<(), PyErr> {
+    #[cfg(not(target_os = "linux"))]
+    rustls::crypto::ring::default_provider()
+    .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
+    #[cfg(target_os = "linux")]
+    rustls::crypto::aws_lc_rs::default_provider()
+    .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
+    Ok(())
+}
+
 #[pymethods]
 impl TlsAdaptor {
     #[staticmethod]
@@ -244,8 +254,7 @@ impl TlsAdaptor {
         key_path: PathBuf,
         domain: String,
     ) -> PyResult<Self> {
-        rustls::crypto::ring::default_provider()
-        .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
+        install_crypto_provider()?;
         let root_cert_store: RootCertStore = TlsAdaptor::build_root_store(ca_path.as_deref())?;
         let client_certs: Vec<CertificateDer> = TlsAdaptor::build_client_certificates(&cert_path)?;
         let client_keys: Vec<PrivateKeyDer> = TlsAdaptor::build_client_private_keys(&key_path)?;
@@ -263,8 +272,7 @@ impl TlsAdaptor {
     }
     #[staticmethod]
     pub fn without_client_auth(root_ca_cert: Option<PathBuf>, domain: String) -> PyResult<Self> {
-        rustls::crypto::ring::default_provider()
-        .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
+        install_crypto_provider()?;
         let inner = Arc::new(
             RuTlsAdaptor::without_client_auth(root_ca_cert.as_deref(), domain)
                 .map_err(|e| PyValueError::new_err(e.to_string()))?,
@@ -616,7 +624,7 @@ impl AsyncEventbus {
 }
 
 #[pymodule]
-fn amqpr(m: &Bound<'_, PyModule>) -> PyResult<()> {
+fn amqp_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<AsyncEventbus>()?;
     m.add_class::<Config>()?;
     m.add_class::<ConfigOptions>()?;

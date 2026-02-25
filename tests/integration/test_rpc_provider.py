@@ -1,5 +1,5 @@
 import pytest
-from amqpr import AsyncEventbus, Config, ConfigOptions, QoSConfig, ContentEncoding
+from amqp_rs import AsyncEventbus, Config, ConfigOptions, QoSConfig, ContentEncoding
 from asyncio import Future, get_running_loop
 from json import dumps
 

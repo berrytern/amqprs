@@ -1,5 +1,5 @@
 import pytest
-from amqpr import AsyncEventbus, Config, ConfigOptions, QoSConfig
+from amqp_rs import AsyncEventbus, Config, ConfigOptions, QoSConfig
 from asyncio import Future, sleep, get_running_loop
 from json import dumps
 

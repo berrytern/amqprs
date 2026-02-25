@@ -1,4 +1,4 @@
-from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
+from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
 from threading import Thread
 import asyncio
 import uvloop
