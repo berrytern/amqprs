@@ -378,7 +378,7 @@ impl AsyncEventbus {
         }
     }
 
-    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, command_timeout=None, delivery_mode=DeliveryMode::Transient, expiration=None))]
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, publish_timeout=16, connection_timeout=16, delivery_mode=DeliveryMode::Transient, expiration=None))]
     fn publish<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &'py str,
@@ -386,7 +386,8 @@ impl AsyncEventbus {
         body: Payload,
         content_type: Option<&'py str>,
         content_encoding: ContentEncoding,
-        command_timeout: Option<u64>,
+        publish_timeout: Option<u64>,
+        connection_timeout: Option<u64>,
         delivery_mode: DeliveryMode,
         expiration: Option<u32>,
     ) -> PyResult<Bound<'py, PyAny>> {
@@ -403,7 +404,8 @@ impl AsyncEventbus {
         let content_type = content_type.map(|s| s.to_owned());
         let content_encoding = content_encoding.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
-            let command_timeout = command_timeout.map(std::time::Duration::from_secs);
+            let publish_timeout = publish_timeout.map(std::time::Duration::from_secs);
+            let connection_timeout = connection_timeout.map(std::time::Duration::from_secs);
             match eventbus
                 .publish(
                     &exchange_name,
@@ -411,7 +413,8 @@ impl AsyncEventbus {
                     payload_bytes,
                     content_type.as_deref(),
                     content_encoding.into(),
-                    command_timeout,
+                    publish_timeout,
+                    connection_timeout,
                     Some(delivery_mode.into()),
                     expiration,
                 )

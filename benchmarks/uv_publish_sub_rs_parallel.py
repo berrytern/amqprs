@@ -4,6 +4,8 @@ import asyncio
 import uvloop
 from time import perf_counter, sleep
 from json import dumps
+import os
+cpu_count = os.cpu_count()
 uvloop.install()
 
 options = ConfigOptions(queue_name='test_queue', rpc_exchange_name='test_exchange', rpc_queue_name='test_rpc_queue')
@@ -13,7 +15,7 @@ eventbus = AsyncEventbus(config, QoSConfig(pub_confirm=True, rpc_client_confirm=
 routing_key = "abc.example"
 exchange_name = options.rpc_exchange_name
 sleep(1) # wait for subscribe to be ready
-process_count = 6
+process_count = cpu_count
 total_messages = 300_000
 async def run(messages: int):
     sended = []

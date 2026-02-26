@@ -13,24 +13,28 @@
 ---
 
 ### What is "amqprs"
-A FFI of rust's library [amqp-client-python](https://github.com/berrytern/amqp-client-rust) that inherit performance and stability of it.
+It is a Python extension developed in Rust using PyO3. It acts as a wrapper for the [amqp-client-python](https://github.com/berrytern/amqp-client-rust) library, inheriting its performance, stability, and asynchronous capabilities.
 
 ### Features
-- Thread Safe;
-- Asynchronous API for high performance;
-- Automatic creation and management of queues, exchanges, and channels;
-- Connection persistence and automatic reconnection;
+- **Thread Safe**: Built on Rust's memory safety guarantees.
+- **Asynchronous API**: Powered by tokio and pyo3-asyncio for high-performance I/O.
+- **Automatic Management**: Handles the creation and management of queues, exchanges, and channels automatically.
+- **Persistence**: Built-in connection persistence and automatic reconnection.
 - Support for **direct**, **topic**, and **fanout** exchanges;
 - Message Publishing and Subscribing;
-- Built-in support for Remote Procedure Calls (RPC).
-- Encoding/Decoding: support to zstd, zlib and lz4;
-- Gracefull shutdowns: stop consumers and process remaining messages;
+- RPC Support: Native abstractions for Remote Procedure Calls (RPC).
+- Compression: Built-in support for `zstd`, `zlib`, and `lz4` encoding.
+- TLS/SSL: Robust encryption support including mutual TLS (client authentication).
+- Graceful Shutdown: Ability to stop consumers cleanly and process remaining messages before closing.
 
 ---
 
 ### Installation
 
-You can install `amqp-rs` directly from PyPI using uv:
+You can install `amqp-rs` directly from PyPI using `uv` or `pip`:
 
 ```bash
 uv add amqp-rs
+```
+
+### Configuration

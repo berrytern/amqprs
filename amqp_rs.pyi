@@ -117,7 +117,8 @@ class AsyncEventbus:
         body: Union[bytes, str],
         content_type: Optional[str] = "application/json",
         content_encoding: ContentEncoding = ContentEncoding.Null,
-        command_timeout: int = 16,
+        publish_timeout: int = 16,
+        connection_timeout: int = 16,
         delivery_mode: DeliveryMode = DeliveryMode.Transient,
         expiration: Optional[int] = None,
     ) -> Future[None]:
