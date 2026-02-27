@@ -28,11 +28,13 @@ def run_process(messages):
     uvloop.install()
     asyncio.run(run(messages))
 
+async def handler(message):
+    pass
 
 # 4. Guard the main execution block (Required for multiprocessing in Python)
 if __name__ == '__main__':
     async def subscribe():
-        await eventbus.subscribe(options.rpc_exchange_name, routing_key, lambda x:None, None, None)
+        await eventbus.subscribe(options.rpc_exchange_name, routing_key, handler, None, None)
     asyncio.run(subscribe())
     sleep(3) # wait for subscribe to be ready
 
@@ -61,6 +63,7 @@ if __name__ == '__main__':
     print(f"time to dispose: {(end - after)} seconds")
     #Time taken for 300k messages: 10.52721416499844 seconds
     #Mean messages per second for 300k messages: 28497.56785583971
+    asyncio.run(dispose())
     del eventbus
     del config
     del options
