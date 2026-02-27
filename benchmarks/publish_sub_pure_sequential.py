@@ -24,6 +24,6 @@ async def run():
     print(f"Time taken for 300k messages: {(after - before) / 1_000_000_000} seconds")
     print(f"Mean messages per second for 300k messages: {300_000 / ((after - before) / 1_000_000_000)}")
     await eventbus.dispose(False)
-    #Time taken for 300k messages: 104.610308301 seconds
-    #Mean messages per second for 300k messages: 2867.7862141156907
+    #Time taken for 300k messages: 87.85540282 seconds
+    #Mean messages per second for 300k messages: 3414.701775537315
 asyncio.run(run())

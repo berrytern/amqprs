@@ -1,10 +1,7 @@
-from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig
+from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig
 
 import asyncio
-import uvloop
-uvloop.install()
 from time import time_ns
-from json import dumps
 
 
 async def run():
@@ -19,14 +16,13 @@ async def run():
     await eventbus.subscribe(exchange_name, routing_key, handler)
     await asyncio.sleep(3)
     before = time_ns()
-    
     for _ in range(0, 300_000):
-        await eventbus.publish(exchange_name, routing_key, dumps('Hello, RPC!'))
+        await eventbus.publish(exchange_name, routing_key, 'Hello, RPC!')
     
     after = time_ns()
     print(f"Time taken for 300k messages: {(after - before) / 1_000_000_000} seconds")
     print(f"Mean messages per second for 300k messages: {300_000 / ((after - before) / 1_000_000_000)}")
-    #Time taken for 300k messages: 54.575097755 seconds
-    #Mean messages per second for 300k messages: 5497.012599899831
+    #Time taken for 300k messages: 76.11478569 seconds
+    #Mean messages per second for 300k messages: 3941.4155512680386
     await eventbus.dispose()
 asyncio.run(run())

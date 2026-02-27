@@ -1,4 +1,4 @@
-from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig, ContentEncoding, TlsAdaptor
+from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, ContentEncoding, TlsAdaptor, Message
 
 import asyncio
 import uvloop
@@ -20,7 +20,7 @@ async def run():
         await asyncio.sleep(1)
         exchange_name = options.rpc_exchange_name
         routing_key = "abc.example"
-        async def handler(_):
+        async def handler(message: Message):
             pass
         await eventbus.subscribe(exchange_name, routing_key, handler, None, None)
         await asyncio.sleep(3)

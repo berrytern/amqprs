@@ -1,9 +1,11 @@
-from amqpr import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
+from amqp_rs import Config, ConfigOptions, AsyncEventbus, QoSConfig, TlsAdaptor
 from threading import Thread
 import asyncio
 import uvloop
 from time import perf_counter, sleep
 from json import dumps
+import os
+cpu_count = os.cpu_count()
 uvloop.install()
 
 options = ConfigOptions(queue_name='test_queue', rpc_exchange_name='test_exchange', rpc_queue_name='test_rpc_queue')
@@ -13,7 +15,7 @@ eventbus = AsyncEventbus(config, QoSConfig(pub_confirm=True, rpc_client_confirm=
 routing_key = "abc.example"
 exchange_name = options.rpc_exchange_name
 sleep(1) # wait for subscribe to be ready
-process_count = 6
+process_count = cpu_count
 total_messages = 300_000
 async def run(messages: int):
     sended = []
@@ -26,11 +28,13 @@ def run_process(messages):
     uvloop.install()
     asyncio.run(run(messages))
 
+async def handler(message):
+    pass
 
 # 4. Guard the main execution block (Required for multiprocessing in Python)
 if __name__ == '__main__':
     async def subscribe():
-        await eventbus.subscribe(options.rpc_exchange_name, routing_key, lambda x:None, None, None)
+        await eventbus.subscribe(options.rpc_exchange_name, routing_key, handler, None, None)
     asyncio.run(subscribe())
     sleep(3) # wait for subscribe to be ready
 
@@ -59,6 +63,7 @@ if __name__ == '__main__':
     print(f"time to dispose: {(end - after)} seconds")
     #Time taken for 300k messages: 10.52721416499844 seconds
     #Mean messages per second for 300k messages: 28497.56785583971
+    asyncio.run(dispose())
     del eventbus
     del config
     del options
