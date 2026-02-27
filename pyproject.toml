@@ -4,8 +4,19 @@ build-backend = "maturin"
 
 [project]
 name = "amqp-rs"
+description = "Python AMQP Client Library developed in Rust using PyO3."
+version = "0.1.0.post2"
 requires-python = ">=3.8"
+license = "Apache-2.0"
+license-files = ['LICENSE']
+authors = [{name = "João Pedro Miranda C. Hluchan", email = "berrytern@gmail.com"}]
+maintainers = [{name = "João Pedro Miranda C. Hluchan", email = "berrytern@gmail.com"}]
 classifiers = [
+    "Development Status :: 4 - Beta",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "License :: OSI Approved :: Apache Software License",
     "Programming Language :: Rust",
     "Programming Language :: Python :: Implementation :: CPython",
     "Programming Language :: Python :: Implementation :: PyPy",
@@ -18,8 +29,25 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
+    "Topic :: Communications",
+    "Topic :: Internet",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: System :: Networking",
 ]
-dynamic = ['version', 'readme']
+homepage = "https://github.com/berrytern/amqp-rs"
+repository = "https://github.com/berrytern/amqp-rs"
+
+keywords = ["packaging", "dependency", "amqp", "async", "fast", "rust", "amqp-rs"]
+dynamic = ['readme']
+
+
+[project.urls]
+Homepage = "https://github.com/berrytern/amqp-rs"
+Repository = "https://github.com/berrytern/amqp-rs"
+"Bug Tracker" = "https://github.com/berrytern/amqp-rs/issues"
+Source = "https://github.com/berrytern/amqp-rs"
+
 
 [dependency-groups]
 dev = [

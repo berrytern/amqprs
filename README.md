@@ -2,10 +2,10 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202-blue.svg)](LICENSE)
 <a href="https://pypi.org/project/amqp-rs" target="_blank">
-    <img src="https://img.shields.io/pypi/v/amqpr?color=%2334D058&label=pypi%20package" alt="Package version">
+    <img src="https://img.shields.io/pypi/v/amqp-rs?color=%2334D058&label=pypi%20package" alt="Package version">
 </a>
 <a href="https://pypi.org/project/amqp-rs" target="_blank">
-    <img src="https://img.shields.io/pypi/pyversions/amqpr.svg?color=%2334D058" alt="Supported Python versions">
+    <img src="https://img.shields.io/pypi/pyversions/amqp-rs.svg?color=%2334D058" alt="Supported Python versions">
 </a>
 
 **amqp-rs** is a Python client library with a high level of abstraction for manipulating messages in RabbitMQ.
@@ -13,7 +13,7 @@
 ---
 
 ### What is "amqprs"
-It is a Python extension developed in Rust using PyO3. It acts as a wrapper for the [amqp-client-python](https://github.com/berrytern/amqp-client-rust) library, inheriting its performance, stability, and asynchronous capabilities.
+It is a Python extension developed in Rust using PyO3. It acts as a wrapper for the [amqp-client-rust](https://github.com/berrytern/amqp-client-rust) library, inheriting its performance, stability, and asynchronous capabilities.
 
 ### Features
 - **Thread Safe**: Built on Rust's memory safety guarantees.
