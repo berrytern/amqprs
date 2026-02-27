@@ -21,8 +21,8 @@ async def run():
         exchange_name = options.rpc_exchange_name
         routing_key = "abc.example"
         async def handler(message: Message):
-            pass
-        await eventbus.subscribe(exchange_name, routing_key, handler, None, None)
+            return message
+        await eventbus.provide_resource(routing_key, handler, None, None)
         await asyncio.sleep(3)
         sended = []
         total = 300_000
@@ -30,7 +30,7 @@ async def run():
         before = perf_counter()
     
         # Queue all futures
-        sended = [eventbus.publish(exchange_name, routing_key, payload, "application/json", ContentEncoding.Null, 100) for _ in range(total)]
+        sended = [eventbus.rpc_client(exchange_name, routing_key, payload, "application/json", ContentEncoding.Null, 160000) for _ in range(total)]
         
         # Wait for all confirmations
         await asyncio.gather(*sended)

@@ -3,7 +3,7 @@ use std::{fs::File, io::BufReader, path::Path, sync::Arc};
 use amqp_client_rust::{
     amqprs::{tls::TlsAdaptor as RuTlsAdaptor}, api::{
         eventbus::AsyncEventbusRabbitMQ as RuAsyncEventbusRabbitMQ,
-        utils::{ContentEncoding as RuContentEncoding, DeliveryMode as RuDeliveryMode},
+        utils::{ContentEncoding as RuContentEncoding, DeliveryMode as RuDeliveryMode, Message as RuMessage},
     }, domain::config::{
         Config as RuConfig, ConfigOptions as RuConfigOptions, QoSConfig as RuQoSConfig,
     }
@@ -41,6 +41,53 @@ impl From<DeliveryMode> for RuDeliveryMode {
             DeliveryMode::Transient => RuDeliveryMode::Transient,
             DeliveryMode::Persistent => RuDeliveryMode::Persistent,
         }
+    }
+}
+
+#[pyclass(from_py_object)]
+#[derive(Debug, Clone)]
+pub struct Message {
+    body: Arc<[u8]>,
+    content_type: Option<String>,
+}
+impl From<RuMessage> for Message {
+    fn from(msg: RuMessage) -> Self {
+        Self {
+            body: msg.body,
+            content_type: msg.content_type,
+        }
+    }
+}
+impl From<Message> for RuMessage {
+    fn from(msg: Message) -> Self {
+        Self {
+            body: msg.body,
+            content_type: msg.content_type,
+        }
+    }
+}
+
+#[pymethods]
+impl Message {
+    #[staticmethod]
+    fn new<'py>(body: Payload<'py>, content_type: Option<String>) -> PyResult<Self> {
+        let body: Arc<[u8]> = match body {
+            Payload::Bytes(b) => b.as_bytes().into(),
+            Payload::Str(s) => s.to_str()?.as_bytes().into(),
+        };
+        Ok(Self {
+            body,
+            content_type,
+        })
+    }
+
+    #[getter]
+    fn body<'py>(slf: PyRef<'py, Self>) -> Bound<'py, PyBytes> {
+        PyBytes::new(slf.py(), &slf.body)
+    }
+    #[getter]
+    fn content_type(&self) -> Option<&str> {
+        self.content_type.as_deref()
     }
 }
 
@@ -378,7 +425,7 @@ impl AsyncEventbus {
         }
     }
 
-    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, publish_timeout=16, connection_timeout=16, delivery_mode=DeliveryMode::Transient, expiration=None))]
+    #[pyo3(signature = (exchange_name, routing_key, body, content_type=Some("application/json"), content_encoding=ContentEncoding::Null, command_timeout=16, delivery_mode=DeliveryMode::Transient, expiration=None))]
     fn publish<'py>(
         slf: PyRef<'py, Self>,
         exchange_name: &'py str,
@@ -386,8 +433,7 @@ impl AsyncEventbus {
         body: Payload,
         content_type: Option<&'py str>,
         content_encoding: ContentEncoding,
-        publish_timeout: Option<u64>,
-        connection_timeout: Option<u64>,
+        command_timeout: Option<u64>,
         delivery_mode: DeliveryMode,
         expiration: Option<u32>,
     ) -> PyResult<Bound<'py, PyAny>> {
@@ -404,8 +450,7 @@ impl AsyncEventbus {
         let content_type = content_type.map(|s| s.to_owned());
         let content_encoding = content_encoding.clone();
         pyo3_async_runtimes::tokio::future_into_py(py, async move {
-            let publish_timeout = publish_timeout.map(std::time::Duration::from_secs);
-            let connection_timeout = connection_timeout.map(std::time::Duration::from_secs);
+            let command_timeout = command_timeout.map(std::time::Duration::from_secs);
             match eventbus
                 .publish(
                     &exchange_name,
@@ -413,8 +458,7 @@ impl AsyncEventbus {
                     payload_bytes,
                     content_type.as_deref(),
                     content_encoding.into(),
-                    publish_timeout,
-                    connection_timeout,
+                    command_timeout,
                     Some(delivery_mode.into()),
                     expiration,
                 )
@@ -504,7 +548,7 @@ impl AsyncEventbus {
                             pyo3_async_runtimes::tokio::scope(locals_clone, async move {
                                 let future_result = Python::attach(|py| -> PyResult<_> {
                                     let bound_handler = handler_clone.bind(py);
-                                    let coro = bound_handler.call1((body,))?;
+                                    let coro = bound_handler.call1((Message::from(body),))?;
 
                                     pyo3_async_runtimes::tokio::into_future(coro)
                                 });
@@ -566,23 +610,27 @@ impl AsyncEventbus {
                             pyo3_async_runtimes::tokio::scope(locals_clone, async move {
                                 let py_future_result = Python::attach(|py| -> PyResult<_> {
                                     let bound_handler = handler_clone.bind(py);
-                                    let coro = bound_handler.call1((body,))?;
+                                    let coro = bound_handler.call1((Message::from(body),))?;
 
                                     // Now into_future will successfully find the asyncio loop!
                                     pyo3_async_runtimes::tokio::into_future(coro)
                                 });
                                 match py_future_result {
                                     Ok(py_future) => match py_future.await {
-                                        Ok(result) => Python::attach(|py| {
+                                        Ok(result) => {
+                                            Python::attach(|py| {
+                                                if let Ok(message) = result.extract::<Message>(py) {
+                                                    return Ok(RuMessage::from(message));
+                                                }
                                             match result.cast_bound::<PyBytes>(py) {
-                                                Ok(bytes) => Ok(bytes.as_bytes().to_vec()),
+                                                Ok(bytes) => Ok( RuMessage { body: bytes.as_bytes().into(), content_type: None }),
                                                 Err(_) => Err(Box::new(std::io::Error::new(
                                                     std::io::ErrorKind::InvalidData,
                                                     "RPC handler must return bytes",
                                                 ))
                                                     as Box<dyn std::error::Error + Send + Sync>),
                                             }
-                                        }),
+                                        })},
                                         Err(e) => Err(Box::new(std::io::Error::new(
                                             std::io::ErrorKind::Other,
                                             e.to_string(),
@@ -634,5 +682,6 @@ fn amqp_rs(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<QoSConfig>()?;
     m.add_class::<TlsAdaptor>()?;
     m.add_class::<ContentEncoding>()?;
+    m.add_class::<Message>()?;
     Ok(())
 }

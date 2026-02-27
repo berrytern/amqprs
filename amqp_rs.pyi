@@ -3,6 +3,15 @@ from concurrent.futures import Future
 from enum import Enum
 
 
+class Message:
+    body: bytes
+    content_type: Optional[str]
+
+    @staticmethod
+    def new(body: bytes, content_type: Optional[str] = None) -> "Message": ...
+
+    
+
 class DeliveryMode(Enum):
     Transient = 1
     Persistent = 2

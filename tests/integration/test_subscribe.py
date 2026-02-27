@@ -44,6 +44,6 @@ async def test_subscribe_topic():
     routing_key = "a.example"
     body = dumps(["hi"])
     await eventbus.subscribe(exchange_name, routing_key, handle)
-    await eventbus.publish(exchange_name, "abc.example", body, publish_timeout=2, connection_timeout=2)
+    await eventbus.publish(exchange_name, "abc.example", body, command_timeout=2)
     assert not future.done()
     await eventbus.dispose()
