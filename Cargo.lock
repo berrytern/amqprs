@@ -10,9 +10,9 @@ checksum = "320119579fcad9c21884f5c4861d16174d0e06250625266f50fe6898340abefa"
 
 [[package]]
 name = "amqp-client-rust"
-version = "0.0.3-alpha.17"
+version = "0.0.3-alpha.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "16ab5aae27abb71add5b21d57e92cf9a8f7ca10f3f53f266c9f70e136ef559c4"
+checksum = "1f708bdd5bcc9cc078d5eb63f7c0a97f70c051990207252833d82ad0dfb9acb4"
 dependencies = [
  "amqprs",
  "arc-swap",
