@@ -283,10 +283,10 @@ impl TlsAdaptor {
 }
 
 fn install_crypto_provider() -> Result<(), PyErr> {
-    #[cfg(not(target_os = "linux"))]
+    #[cfg(target_vendor = "apple")]
     rustls::crypto::ring::default_provider()
     .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
-    #[cfg(target_os = "linux")]
+    #[cfg(any(target_os = "linux", target_os = "windows"))]
     rustls::crypto::aws_lc_rs::default_provider()
     .install_default().map_err(|_| PyValueError::new_err("Error on install crypto provider for tls"))?;
     Ok(())
