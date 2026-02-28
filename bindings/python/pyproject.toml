@@ -49,6 +49,9 @@ Repository = "https://github.com/berrytern/amqp-rs"
 Source = "https://github.com/berrytern/amqp-rs"
 
 
+#[tool.maturin]
+#manifest-path = "bindings/python/Cargo.toml"
+
 [dependency-groups]
 dev = [
     "maturin[patchelf,zig]>=1.11.5",

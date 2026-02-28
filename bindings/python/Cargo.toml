@@ -1,0 +1,17 @@
+[package]
+name = "amqp-rs"
+version = "0.1.0"
+edition = "2024"
+
+[lib]
+name = "amqp_rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+# Link to your local core crate!
+amqp-rs-core = { path = "../../core" }
+
+# Python-specific dependencies
+amqp-client-rust = { version = "=0.0.3-alpha.18", features = ["tls", "zstd", "lz4_flex", "flate2"] }
+pyo3 = { version = "0.28", features = ["extension-module", "generate-import-lib"] }
+pyo3-async-runtimes = { version = "0.28", features = ["tokio-runtime"] }
